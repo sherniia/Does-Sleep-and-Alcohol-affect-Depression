@@ -1,4 +1,4 @@
-# Sleep_Alcohol_Depression
+# How Does Sleep Quality and Number of Alcoholic drinks per week Affect Depression Score of a College Student 
 Exploratory and statistical analysis on the effects of sleep quality and number of alcoholic drinks on the depression score of a college student
 
 Tecchniques used:
