@@ -1,0 +1,197 @@
+---
+title: "Does Sleep Quality and Number of Alcohol Drinks Affect Depression of a College Student?"
+author: "Aiastan Sherniiazov"
+date: "May 5, 2020"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, fig.height=3, fig.width = 6)
+  opts_chunk$set(fig.align='center')
+library(tidyverse)
+```
+
+## Abstract
+We investigated whether poor quality sleep and alcohol use have an effect on depression, using the dataset "SleepStudy" from the RStudio package dataset library "Lock5Data". The data is from a study of sleep patterns for 253 college students. In this investigation, we have found that quality of sleep has a significant effect on the depression score of students. We have also found a weak relationship between the alcohol use and depression score. These findings might be considered valuable for general public and add to a larger health and medicine knowledge 
+
+\newpage
+
+## Background and Significance
+
+Does sleep quality matter when talking about the depression score of a college student? Do number of alcohol drinks have an effect on the depression? These are important questions to think about for a student if they worry about their mental state while dealing with pressure of college life and work. In this study, we examined whether sleep quality and the number of alcoholic drinks per week are important factors in relation to the depression score and status of a college student. 
+
+The are number of research studies done on a relationship between sleep, alcohol and their relationship to depression. One such research study done by David Nutt et al. (2008) found a strong connection between quality and amount of sleep with depression. They went further to suggest that problems with sleep is a risk factor which can result in later development of depression. Study done by Kuria et al. (2012) have discovered that alcohol dependence is associated with major depression. Ramsey et al. (2005) have observed that drinking alcohol interferes with depression treatment. 
+
+In this paper, we investigate the effect of sleep quality and alcohol use have on depression of a college student.
+
+## Data
+
+```{r, echo=FALSE}
+library(Lock5Data)
+data("SleepStudy")
+sleep <- SleepStudy %>% select(GPA,PoorSleepQuality,DepressionScore,DepressionStatus,StressScore,
+Stress,Happiness,AlcoholUse,Drinks,AverageSleep)
+# you should use
+#libary(package)
+#data("dataset_name")
+```
+
+Using "Lock5Data" data library, we obtained data from a study of sleep patterns for college students. We considered the quantitative variable Poor Sleep Quality score, which is a measure of sleep quality (higher values represent poorer sleep quality). We also considered the quantitative variable "Drinks", which represents the number of alcohol drinks per week. There are two responses variables of interest: "Depression Status" and "Depression Score". Both of these variables represent the same thing, and the only difference is in the type of variable."Depression Status" is a categorical variable, while "Depression Score" is quantitative. This data set contains 253 observations and 27 variables. We have filtered out the original data and selected only four variables of interest. The table below displays the mean and standard deviation in Poor Quality Sleep scores and drinks per week for each Depression Status.
+
+```{r}
+sleep <- SleepStudy %>% select(PoorSleepQuality,DepressionScore,DepressionStatus, Drinks)
+```
+
+```{r, fig.cap="Table 1: Summary Statistic"}
+library(knitr)
+table_1 <- sleep %>% group_by(DepressionStatus) %>% 
+  summarise(Mean_drinks= mean(Drinks),
+            StDev_drinks = sd(Drinks),
+            Mean_Poor_Sleep = mean(PoorSleepQuality),
+            StDev_Poor_sleep = sd(PoorSleepQuality))%>%
+  arrange(desc(Mean_Poor_Sleep))
+kable(table_1, caption = "Summary Statistics")
+```
+
+Figure 1 displays density plot of Poor Sleep Quality (PSQ) score, while Figure 2 shows a scatterplot of IMDB score against run time, with regression lines included for each MPAA rating. 
+
+```{r, fig.cap="Distribution of Poor Quality Sleep Scores"}
+ggplot(data=SleepStudy, aes(x=PoorSleepQuality, color=DepressionStatus, fill=DepressionStatus)) + geom_density(alpha=0.2) + xlab("Poor Quality Sleep Score") + ggtitle("Poor Quality Sleep Score Density Plot")
+```
+
+```{r, fig.cap="Distribution of Relationship Between Poor Sleep Quality Score and Depression Score"}
+ggplot(data=sleep, aes(x=PoorSleepQuality, y = DepressionScore, color=DepressionStatus)) + geom_point() +  xlab("Poor Quality Sleep Score") + ylab("Depression Score") + ggtitle("Relationship between Poor Quality Sleep and Depression Score")
+```
+
+```{r, fig.cap="Relationship between Number of Alcohol Drinks per week and Depression Score for each Depression Status"}
+ggplot(data=sleep, aes(x=Drinks, y = DepressionScore, color=DepressionStatus)) + geom_point()+ 
+ xlab("Number of Alcohol Drinks per week") + ylab("Depression Score") + ggtitle("Number of Alcohol Drinks per Week, Depression Score and Depression Status ")
+```
+
+From the first figure we can see that students tend to have poorer sleep quality if their depression status is moderate or severe. From figure 2, we can see that students with severe depression status have a PSQ score between 7 and 15, while students with moderate depression status have PSQ score between 3-18. Students with normal depression status have PSQ score ranging between 1-15. Figure 3 shows that people with normal depression status drink around 0 - 24 drinks per week. Students with moderate depression status drink around 0-20 drinks per week, and students with severe depression status drink around 0-15 alcohol drinks per week.   
+
+
+## Model  
+
+We first fit a model relating PSQ, Number of Drinks per week, and Depression Score, without accounting for interaction between PSQ and number of drinks. Table 2 gives the model coefficients. 
+
+```{r}
+model1 <- lm(data=SleepStudy, DepressionScore~PoorSleepQuality+ Drinks)
+kable(coef(summary(model1))[,],caption="Table 1: Table of Model Coefficients")
+```
+
+The estimated regression equation is 
+\[
+\widehat{\text{Depression Score}} = -0.2887 + 0.89\times \text{PSQ Score} - 0.0155 \times \text{Drinks}. 
+\]
+
+The intercept term represents a negative Depression score value, which doesn't really make sense, since the minimum Depression score is zero. We estimate that Depression Score is expected to increase by about 0.89 points for each additional increase in PSQ score, assuming the number of drinks per week is held constant. According to this model, Depression score is expected to decrease by 0.0155 for each additional drink. 
+
+The value of $R^2$ was 0.1882. This indicates that approximately 18.82% of the variability in Depression score is explained by the model including PQS score, and number of drinks per week.
+
+Now, we fit a model and an interaction term between PSQ score and number of drinks per week. Table 3 shows the model coefficients. 
+
+```{r}
+model2 <- lm(data=SleepStudy, DepressionScore~PoorSleepQuality * Drinks)
+kable(coef(summary(model2))[,], caption="Table 2: Table of Model Coefficients")
+```
+
+The estimated regression equation is 
+\[
+\widehat{\text{Depression Score}} = 0.018 + 0.84\times \text{PSQ score} - 0.0786\times \text{Drinks} + 0.01\times\text{PSQ}\times\text{Drinks}
+\]
+
+In this case, the intercept term has a valid meaning since it is not a negative value. The intercept term represents the expected value for the Depression score of a student with PSQ score of zero and zero drinks per week. The b1 and b2 coefficients are interpreted in the same way as the previous model. The interaction term represents the expected increase effect of PSQ score for different number of drinks per week. 
+
+The value of $R^2$ was 0.1886. This indicates that approximately 18.86% of the variability in Depression Score of students is explained by the model including PSQ score, number of drinks per week, and their interaction term. 
+
+In this model, we observe a small increase in $R^2$, and the p-value of the interaction term is really small, which points that interaction term doesn't really help explaining this model. Therefore, we will use the model without the interaction term.  
+
+
+## Inference
+
+In this section, we use this sample of 253 observation of sleep patterns of college students  to draw broader conclusions about PSQ score and number of drinks per week for all college students in United States. First, we calculate a confidence interval for the expected value of Depression score for a score of 15 in PSQ, considering student doesn't drink. Then, we calculate a confidence interval for the the expected value of Depression score if a student drinks 20 alcoholic drinks per week, but has a PSQ score of zero. 
+
+The general form of the regression equation is
+
+\[
+\widehat{\text{Depression Score}} = -0.2887 + 0.89\times \text{PSQ Score} - 0.0155 \times \text{Drinks}. 
+\]
+
+The expected value of Depression score for a score of 15 in PSQ, considering student doesn't drink, is given by $b_0+15*b_1$. We use bootstrapping to find a 95% confidence interval for this quantity, as it pertains to all students. Figure 4 displays the bootstrap distribution and a 95% bootstrap percentile confidence interval. We are 95% confident that the average Depression score for a score of 15 in PSQ, considering student doesn't drink, is between 9.95 and 16.4 unit for all college students in United States. 
+
+```{r}
+b0 <- rep(NA, 10000)  
+b1 <- rep(NA, 10000)
+b2 <- rep(NA, 10000)  
+b3 <- rep(NA, 10000)  
+
+for (i in 1:10000){
+BootstrapSample <- sample_n(SleepStudy, 253, replace=TRUE)   
+M <- lm(data=BootstrapSample, DepressionScore ~ PoorSleepQuality + Drinks) # fit linear model
+b0[i] <- coef(M)[1]
+b1[i] <- coef(M)[2]
+b2[i] <- coef(M)[3]
+}
+drinks_20 <- b0 + 20*b2
+poor_sleep <- b0 + 15*b1
+dep_sleep_alc <- data.frame(b0, b1, b2, poor_sleep, drinks_20)
+```
+
+
+```{r}
+q.025 <- quantile(dep_sleep_alc$poor_sleep, 0.025) 
+q.975 <- quantile(dep_sleep_alc$poor_sleep, 0.975) 
+```
+
+```{r, fig.cap="The expected value of depression score for a score of 15 in Poor Sleep Quality"}
+sleep_plot <- ggplot(data=dep_sleep_alc, aes(x=poor_sleep))+geom_histogram(color="white", fill="light blue") + xlab("Depression Score") + ylab("Frequency")+ggtitle("The expected value of depression score for a score of 15 in Poor Sleep Quality")
+sleep_plot + geom_vline(xintercept=c(q.025,q.975), color="red")
+```
+
+
+
+Next, we compare the expected value of Depression score if a student drinks 20 alcoholic drinks per week, but has a PSQ score of zero (sleep quality is exceptional for that student). This relationship is given by $b_0 + 20*b_2$.
+
+
+```{r, fig.cap="Bootstrap Distribution for expected Depression Score if the number of drinks per week is 20"}
+drink_plot <- ggplot(data=dep_sleep_alc, aes(x=drinks_20))+geom_histogram(color="white", fill="light blue") + xlab("Incr") + ylab("Frequency")+ggtitle("The expected value of depression score for 20 drinks per week")
+
+q.025 <- quantile(dep_sleep_alc$drinks_20, 0.025) 
+q.975 <- quantile(dep_sleep_alc$drinks_20, 0.975) 
+
+drink_plot + geom_vline(xintercept=c(q.025,q.975), color="red")
+```
+
+We are 95% confident that the expected value of Depression score if a student drinks 20 alcoholic drinks per week, but has a PSQ score of zero, is between -4.07 and 2.36.
+
+## Discussion and Conclusions
+
+This investigation was trying to find if there are any effects of Poor Quality Sleep and number of drinks er week on the Depression score and status. We have to note that most of the college students in this data set have low depression score and have indicated a normal depression status, which impacted our conclusions.
+
+Even though the data set is not ideal, we have found a strong relationship between sleep quality and depression. From figure 1, it can be seen that PQS score has an evident effect on the Depression Status of a college student. Figure 2 shows that even though there are outliers in the data, and there is a variety of PSQ score ranges for different depression statuses, most of the students with normal depression status reside between 2.5-12 poor sleep quality score, and most of the students with moderate depression status between 3-15. All of the students with severe depression status reside between 7-14, which points at a more located and precise range of PQS scores, which could point at the connection between the sleep quality and depression status. Also, looking at the summary statistic of table 1, one can see that the mean PSQ score of students with severe depression status is around 10 and is a highest mean PSQ score among different depression statuses. The confidence interval for the expected value of depression score for the score of 15 in Poor Sleep Quality shows that on average people who score 15 in PSQ tend to score between 9.95 and 16.4 on the Depression score, which further suggests that sleep quality affects depression of a college student. 
+
+We have not found any significant effects or relationships of alcohol drinks per week on the depression score. Looking at the figure 3, there are no clear connections with the number of alcohol drinks per week and the depression score. The figure actually indicates that people with the normal depression status tend to drink more than people with moderate or severe depression statuses. However, one shouldn't take meaningful insights from this scatterplot since the data set is not ideal, and there way more people with a normal depression status compared to other depression statuses. The confidence interval of the expected depression score for a student who drinks 20 alcoholic drinks per week is between -4.07 and 2.36. This shows that 20 drinks per week is more likely to decrease the depression score of a college student. 
+
+There are no signs of an interaction between PSQ and number of drinks per week, which was quite interesting since one would think that the more a college student drinks the worse quality of sleep he or she gets.
+
+The fact that our model only explained 18% of the variability in Depression scores is not surprising. There are many factors that could potentially affect the depression score or status of a person. Still, there is a clear relationship between the PSQ score and the Depression score/status. 
+
+There are several limitations that we should be aware of. Our sample contained a variety of different depression statuses, most of them labeling "normal". Because of that, extending our findings to a bigger population is under the question, especially the effect of alcohol use on depression. The data set was focused more on the sleep patterns of college students, and less on the depression statuses and scores. In order to see a better relationship between alcohol and depression one has to get data that includes more people with severe depression and look at their alcohol history.
+
+Our study supports a largely known relationship between the quality of sleep and depression, however our results for the relationship between alcohol and depression are not significant enough. There is a potential for further studies especially for alcohol use and depression, and looking at how alcohol use could potentially lead to later development of depression.  
+
+
+\newpage 
+
+## Bibliography
+
+David Nutt, Sue Wilson, & Louise Paterson. (2008). Sleep disorders as core symptoms of depression. Retrieved from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3181883/
+
+Mary W. Kuria, & David M. Ndetei, & Isodore S. Obot, & Lincoln I. Khasakhala, & Betty M. Bagaka, & Margaret N. Mbugua, & and Judy Kamau 7 (2012). The Association between Alcohol Dependence and Depression before and after Treatment for Alcohol Dependence. Retrieved from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3658562/ 
+
+Susan E. Ramsey, & Patricia A. Engler, & Michael D. Stein (2005). Alcohol Use Among Depressed Patients: The Need for Assessment and Intervention. Retrieved from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2874911/ 
+
