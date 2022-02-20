@@ -1,4 +1,4 @@
-# Sleep-Alcohol-Depression 
+# Does sleep quality and number of drinks affect the depression score?
 Exploratory and statistical analysis on the effects of sleep quality and number of alcoholic drinks on the depression score of a college student
 
 Tecchniques used:
